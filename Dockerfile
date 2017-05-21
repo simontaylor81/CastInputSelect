@@ -1,5 +1,5 @@
 # Use an official Python runtime as a base image
-FROM simontaylor81/python27-alpine-gcc
+FROM simontaylor81/python27-alpine-netifaces
 
 # Set the working directory to /app
 WORKDIR /app

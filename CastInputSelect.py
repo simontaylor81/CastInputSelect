@@ -1,4 +1,5 @@
 import pychromecast
+import eiscp
 
 all_casts = pychromecast.get_chromecasts()
 
@@ -8,6 +9,24 @@ if livingroom == None:
     exit(1)
 
 livingroom.wait()
+
+
+all_receivers = eiscp.eISCP.discover()
+if len(all_receivers) == 0:
+    print "Receiver not found."
+    exit(1)
+
+receiver = all_receivers[0]
+
+
+def connected():
+    # Power on receiver and select AUX channel
+    receiver.command('system-power=on')
+    receiver.command('input-selector=aux1')
+
+def disconnected():
+    # Don't do anything on disconnection
+    pass
 
 
 def is_casting(media_status):
@@ -23,9 +42,9 @@ class Listener:
     def new_cast_status(self, status):
         new_is_connected = is_connected(status)
         if not self.curr_is_connected and new_is_connected:
-            print "Connected"
+            connected()
         elif self.curr_is_connected and not new_is_connected:
-            print "Disconnected"
+            disconnected()
         
         self.curr_is_connected = new_is_connected
 

@@ -1,6 +1,7 @@
 import pychromecast
 import eiscp
 
+print "Finding Chromecasts..."
 all_casts = pychromecast.get_chromecasts()
 
 livingroom = next((x for x in all_casts if x.device.friendly_name == 'Living Room'), None)
@@ -9,14 +10,17 @@ if livingroom == None:
     exit(1)
 
 livingroom.wait()
+print "Connected to '{}' ({})".format(livingroom.name, livingroom.host)
 
 
+print "Finding Onkyo receivers..."
 all_receivers = eiscp.eISCP.discover()
 if len(all_receivers) == 0:
     print "Receiver not found."
     exit(1)
 
 receiver = all_receivers[0]
+print "Connected to '{}' ({})".format(receiver.model_name, receiver.host)
 
 
 def connected():

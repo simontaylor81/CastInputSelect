@@ -21,6 +21,7 @@ receiver = all_receivers[0]
 
 def connected():
     # Power on receiver and select AUX channel
+    print "Chromecast connected, sending wake up to {}".format(receiver.host)
     receiver.command('system-power=on')
     receiver.command('input-selector=aux1')
 

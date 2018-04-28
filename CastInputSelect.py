@@ -55,4 +55,5 @@ class Listener:
 
 listener = Listener(livingroom)
 
+print "Waiting for connections..."
 livingroom.socket_client.join()

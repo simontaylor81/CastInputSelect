@@ -1,30 +1,26 @@
 import sys
 import pychromecast
 import eiscp
-
+import argparse
 import logging
-logging.basicConfig(level=logging.DEBUG)
-logging.getLogger("zeroconf").setLevel(logging.DEBUG)
 
-known_hosts = None
-if len(sys.argv) > 1:
-    known_hosts = [sys.argv[1]]
 
-print("Finding Chromecasts...")
-casts, browser = pychromecast.get_listed_chromecasts(friendly_names=["Living Room"], known_hosts=known_hosts)
-#print(casts)
-browser.stop_discovery()
+def find_chromecast(known_hosts):
+    print("Finding Chromecasts...")
+    casts, browser = pychromecast.get_listed_chromecasts(friendly_names=["Living Room"], known_hosts=known_hosts)
+    #print(casts)
+    browser.stop_discovery()
 
-#livingroom = next((x for x in all_casts if x.cast_info.friendly_name == 'Living Room'), None)
-#if livingroom == None:
-if len(casts) == 0:
-    print("Living Room Chromecast not found.")
-    exit(1)
-livingroom = casts[0]
+    if len(casts) == 0:
+        print("Living Room Chromecast not found.")
+        exit(1)
+    livingroom = casts[0]
 
-livingroom.wait()
-lr_info = livingroom.cast_info
-print("Connected to {} '{}' ({})".format(lr_info.model_name, lr_info.friendly_name, lr_info.host))
+    livingroom.wait()
+    lr_info = livingroom.cast_info
+    print("Connected to {} '{}' ({})".format(lr_info.model_name, lr_info.friendly_name, lr_info.host))
+
+    return livingroom
 
 
 receiver = None
@@ -38,9 +34,6 @@ def find_receiver():
     global receiver
     receiver = all_receivers[0]
     print("Connected to '{}' ({})".format(receiver.model_name, receiver.host))
-
-# Find receiver at startup to avoid delay on first connect
-find_receiver()
 
 
 # Power on receiver and select AUX channel
@@ -112,7 +105,39 @@ class Listener:
         except:
             print("Unexpected error:", sys.exc_info()[0])
 
-listener = Listener(livingroom)
 
-print("Waiting for connections...")
-livingroom.socket_client.join()
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Python script to switch receiver input when the Chromecast is connected to."
+    )
+    parser.add_argument(
+        "--known-host",
+        help="Add known chromecast IP. Can be used multiple times. Useful for debugging on Windows.",
+        action="append",
+    )
+    parser.add_argument("--show-chromecast-debug", help="Enable pychromecast debug log", action="store_true")
+    parser.add_argument("--show-zeroconf-debug", help="Enable zeroconf debug log", action="store_true")
+    args = parser.parse_args()
+
+    if args.show_chromecast_debug:
+        logging.basicConfig(level=logging.DEBUG)
+    if args.show_zeroconf_debug:
+        print("Zeroconf version: " + zeroconf.__version__)
+        logging.getLogger("zeroconf").setLevel(logging.DEBUG)
+
+    return args
+
+
+def main():
+    args = parse_args()
+    livingroom = find_chromecast(args.known_host)
+
+    # Find receiver at startup to avoid delay on first connect
+    find_receiver()
+
+    listener = Listener(livingroom)
+
+    print("Waiting for connections...")
+    livingroom.socket_client.join()
+
+main()

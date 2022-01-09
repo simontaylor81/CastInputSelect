@@ -1,2 +1,3 @@
 onkyo-eiscp==1.2.7
 PyChromecast==10.2.3
+zeroconf==0.31.0

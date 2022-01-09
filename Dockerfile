@@ -20,4 +20,5 @@ RUN apk add --no-cache build-base linux-headers \
 # Make port 80 available to the world outside this container
 #EXPOSE 80
 
-CMD ["python", "-u", "CastInputSelect.py"]
+# Run the command. -u is for unbuffered stdout/stderr
+CMD ["python", "-u", "CastInputSelect.py", "--show-chromecast-debug"]
